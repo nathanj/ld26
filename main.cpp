@@ -1,76 +1,87 @@
-#include <SFML/Graphics.hpp>
+#include <list>
 #include <string>
+#include <assert.h>
+#include <math.h>
 #include <stdio.h>
 
-using namespace std;
-using namespace sf;
+#include <SFML/Graphics.hpp>
+#include <SFML/Window/Mouse.hpp>
 
-void move(Sprite &sprite, float dx, float dy)
+#include "GameSprite.hpp"
+
+sf::Texture bg_texture;
+sf::Sprite bg;
+
+sf::Texture fish_texture;
+std::vector<GameSprite*> fishes;
+
+void load_data()
 {
-	Vector2f v = sprite.getPosition();
-	v.x += dx;
-	v.y += dy;
-	sprite.setPosition(v);
+	assert(bg_texture.loadFromFile("bg.png"));
+	bg.setTexture(bg_texture);
+	assert(fish_texture.loadFromFile("fish.png"));
 }
 
 int main(int, char **)
 {
-	RenderWindow window(VideoMode(800, 600), "SFML Window");
+	sf::RenderWindow window(sf::VideoMode(800, 600), "SFML Window");
 
-	Texture bg_texture;
-	if (!bg_texture.loadFromFile("bg.png"))
-		return 1;
-	Sprite bg(bg_texture);
+	load_data();
 
-	Texture fish_texture;
-	if (!fish_texture.loadFromFile("fish.png"))
-		return 1;
-	Sprite fish(fish_texture);
-	fish.setPosition(300, 300);
+	fishes.push_back(new GameSprite(fish_texture));
+	fishes.push_back(new GameSprite(fish_texture));
+	fishes.push_back(new GameSprite(fish_texture));
+	fishes.push_back(new GameSprite(fish_texture));
+	fishes.push_back(new GameSprite(fish_texture));
+
+	for (auto it = fishes.begin(); it != fishes.end(); it++)
+		(*it)->setPosition(rand() % 800, rand() % 600);
 
 	window.setFramerateLimit(60);
 	window.setKeyRepeatEnabled(false);
 
 	while (window.isOpen()) {
-		Event event;
+		sf::Event event;
 		while (window.pollEvent(event)) {
-			if (event.type == Event::Closed)
+			if (event.type == sf::Event::Closed)
 				window.close();
-			if (event.type == Event::JoystickButtonPressed) {
+			if (event.type == sf::Event::JoystickButtonPressed) {
 				printf("joystick: %d button: %d\n",
 				       event.joystickButton.joystickId,
 				       event.joystickButton.button);
 			}
-			if (event.type == Event::JoystickButtonReleased) {
+			if (event.type == sf::Event::JoystickButtonReleased) {
 				printf("joyreles: %d button: %d\n",
 				       event.joystickButton.joystickId,
 				       event.joystickButton.button);
 			}
-			if (event.type == Event::JoystickMoved) {
+			if (event.type == sf::Event::JoystickMoved) {
 				printf("joystick: %d axis: %d position: %f\n",
 				       event.joystickMove.joystickId,
 				       event.joystickMove.axis,
 				       event.joystickMove.position);
 			}
-			if (event.type == Event::KeyPressed) {
-				if (event.key.code == Keyboard::Q)
+			if (event.type == sf::Event::KeyPressed) {
+				if (event.key.code == sf::Keyboard::Q)
 					window.close();
-				if (event.key.code == Keyboard::Up)
-					move(fish, 0, -10);
-				if (event.key.code == Keyboard::Down)
-					move(fish, 0, 10);
-				if (event.key.code == Keyboard::Left)
-					move(fish, -10, 0);
-				if (event.key.code == Keyboard::Right)
-					move(fish, 10, 0);
+			}
+			if (event.type == sf::Event::MouseMoved) {
+				//printf("mouse move: %d %d\n", event.mouseMove.x, event.mouseMove.y);
 			}
 		}
 
+		for (auto it = fishes.begin(); it != fishes.end(); it++)
+			(*it)->update(window);
+
 		//window.clear();
 		window.draw(bg);
-		window.draw(fish);
+		for (auto it = fishes.begin(); it != fishes.end(); it++)
+			window.draw(**it);
 		window.display();
 	}
+
+	for (auto it = fishes.begin(); it != fishes.end(); it++)
+		delete *it;
 
 	return 0;
 }
