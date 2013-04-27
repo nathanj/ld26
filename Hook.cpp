@@ -5,6 +5,8 @@
 #include "Fish.hpp"
 
 extern std::vector<Fish*> fishes;
+extern sf::Texture dude_texture[3];
+extern sf::Sprite dude;
 
 Hook::Hook(const sf::Texture &texture) : GameSprite(texture)
 {
@@ -28,6 +30,8 @@ void Hook::catchFish()
 			caught->state = Fish::State::Caught;
 			caught->setRotation(90);
 			velocity.y = -100;
+			dude.setTexture(dude_texture[1]);
+			dude.setPosition(570, 43);
 			break;
 		}
 	}
@@ -40,6 +44,8 @@ void Hook::update(const sf::RenderWindow &, const sf::Time &delta)
 		move(velocity * delta.asSeconds());
 		if (velocity.y > 0 && getPosition().y > 220) {
 			state = Normal;
+			dude.setTexture(dude_texture[0]);
+			dude.setPosition(570, 53);
 			velocity.x = 0;
 			velocity.y = 30;
 		}
@@ -50,6 +56,8 @@ void Hook::update(const sf::RenderWindow &, const sf::Time &delta)
 		move(velocity * delta.asSeconds());
 		if (getPosition().x > 650 && getPosition().y < 100) {
 			state = Launch;
+			dude.setTexture(dude_texture[2]);
+			dude.setPosition(570, 43);
 			setRotation(0);
 			velocity.x = -(rand() % 200 + 100);
 			velocity.y = -50;
@@ -68,7 +76,7 @@ void Hook::update(const sf::RenderWindow &, const sf::Time &delta)
 			state = Propelled;
 			rotate(70);
 			velocity.x = (650 - getPosition().x);
-			velocity.y = (100 - getPosition().y);
+			velocity.y = (50 - getPosition().y);
 			float len = sqrt(velocity.x*velocity.x + velocity.y*velocity.y);
 			if (len > 0)
 				velocity /= len;

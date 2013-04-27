@@ -17,6 +17,8 @@ sf::Sprite bg;
 sf::Texture hook_texture;
 Hook *hook;
 
+sf::Texture dude_texture[3];
+sf::Sprite dude;
 sf::Texture fish_texture[3];
 std::vector<Fish*> fishes;
 
@@ -28,6 +30,11 @@ void load_data()
 	assert(fish_texture[0].loadFromFile("fish.png"));
 	assert(fish_texture[1].loadFromFile("fish2.png"));
 	assert(fish_texture[2].loadFromFile("fish3.png"));
+	assert(dude_texture[0].loadFromFile("dude.png"));
+	assert(dude_texture[1].loadFromFile("dude2.png"));
+	assert(dude_texture[2].loadFromFile("dude3.png"));
+	dude.setTexture(dude_texture[0]);
+	dude.setPosition(570, 53);
 }
 
 int main(int, char **)
@@ -108,6 +115,7 @@ int main(int, char **)
 
 		//window.clear();
 		window.draw(bg);
+		window.draw(dude);
 		for (auto it = fishes.begin(); it != fishes.end(); it++)
 			window.draw(**it);
 		window.draw(*hook);
