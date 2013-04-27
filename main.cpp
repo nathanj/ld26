@@ -5,42 +5,57 @@
 #include <stdio.h>
 
 #include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
 #include <SFML/Window/Mouse.hpp>
 
 #include "GameSprite.hpp"
+#include "Fish.hpp"
+#include "Hook.hpp"
 
 sf::Texture bg_texture;
 sf::Sprite bg;
+sf::Texture hook_texture;
+Hook *hook;
 
 sf::Texture fish_texture;
-std::vector<GameSprite*> fishes;
+std::vector<Fish*> fishes;
 
 void load_data()
 {
 	assert(bg_texture.loadFromFile("bg.png"));
 	bg.setTexture(bg_texture);
+	assert(hook_texture.loadFromFile("hook.png"));
 	assert(fish_texture.loadFromFile("fish.png"));
 }
 
 int main(int, char **)
 {
 	sf::RenderWindow window(sf::VideoMode(800, 600), "SFML Window");
+	sf::Clock clock;
+	sf::Time prev = clock.getElapsedTime();
+	int frames = 0;
+
+	srand(time(NULL));
 
 	load_data();
 
-	fishes.push_back(new GameSprite(fish_texture));
-	fishes.push_back(new GameSprite(fish_texture));
-	fishes.push_back(new GameSprite(fish_texture));
-	fishes.push_back(new GameSprite(fish_texture));
-	fishes.push_back(new GameSprite(fish_texture));
+	for (int i = 0; i < 50; i++)
+		fishes.push_back(new Fish(fish_texture));
+
+	hook = new Hook(hook_texture);
 
 	for (auto it = fishes.begin(); it != fishes.end(); it++)
-		(*it)->setPosition(rand() % 800, rand() % 600);
+		(*it)->setPosition(rand() % 600 + 20, 250 + rand() % 100);
 
 	window.setFramerateLimit(60);
 	window.setKeyRepeatEnabled(false);
 
 	while (window.isOpen()) {
+		sf::Time time = clock.getElapsedTime();
+		sf::Time delta = time - prev;
+		prev = time;
+		frames++;
+
 		sf::Event event;
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed)
@@ -71,17 +86,24 @@ int main(int, char **)
 		}
 
 		for (auto it = fishes.begin(); it != fishes.end(); it++)
-			(*it)->update(window);
+			(*it)->update(window, delta);
+		hook->update(window, delta);
 
 		//window.clear();
 		window.draw(bg);
 		for (auto it = fishes.begin(); it != fishes.end(); it++)
 			window.draw(**it);
+		window.draw(*hook);
 		window.display();
 	}
 
+	sf::Time time = clock.getElapsedTime();
+	printf("%d frames in %.2f seconds = %.2f FPS\n", frames, time.asSeconds(),
+	       frames / time.asSeconds());
+
 	for (auto it = fishes.begin(); it != fishes.end(); it++)
 		delete *it;
+	delete hook;
 
 	return 0;
 }

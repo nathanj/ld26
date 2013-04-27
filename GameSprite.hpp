@@ -1,3 +1,5 @@
+#pragma once
+
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 
@@ -6,7 +8,7 @@ public:
 	GameSprite(const sf::Texture&);
 	sf::Vector2f velocity;
 
-	void update(const sf::RenderWindow &window);
+	virtual void update(const sf::RenderWindow &window, const sf::Time &delta);
 private:
 	GameSprite(const GameSprite&);
 	GameSprite& operator=(const GameSprite&);
