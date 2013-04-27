@@ -41,21 +41,24 @@ int main(int, char **)
 
 	load_data();
 
-	for (int i = 0; i < 50; i++) {
+	for (int i = 0; i < 100; i++) {
 		Fish *f = new Fish(fish_texture[0]);
 		f->setPosition(rand() % 600 + 20, 250 + rand() % 200);
+		f->setColor(sf::Color(255-rand()%50, 255-rand()%50, 255-rand()%50, 255));
 		fishes.push_back(f);
 	}
 
 	for (int i = 0; i < 30; i++) {
 		Fish *f = new Fish(fish_texture[1]);
 		f->setPosition(rand() % 600 + 20, 300 + rand() % 200);
+		f->setColor(sf::Color(255-rand()%50, 255-rand()%50, 255-rand()%50, 255));
 		fishes.push_back(f);
 	}
 
 	for (int i = 0; i < 5; i++) {
 		Fish *f = new Fish(fish_texture[2]);
 		f->setPosition(rand() % 500 + 20, 400 + rand() % 200);
+		f->setColor(sf::Color(255-rand()%50, 255-rand()%50, 255-rand()%50, 255));
 		fishes.push_back(f);
 	}
 

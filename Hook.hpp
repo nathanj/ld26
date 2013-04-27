@@ -12,6 +12,12 @@ public:
 	Hook(const sf::Texture&);
 
 	virtual void update(const sf::RenderWindow &window, const sf::Time &delta);
+
+	enum State {
+		Normal,
+		Launch,
+		Propelled,
+	} state;
 private:
 	Hook(const Hook&);
 	Hook& operator=(const Hook&);

@@ -44,7 +44,6 @@ void Fish::update(const sf::RenderWindow &, const sf::Time &delta)
 
 	if (state == Caught) {
 		setScale(1, 1);
-		setRotation(90);
 		setPosition(hook->getPosition().x, hook->getPosition().y+getTexture()->getSize().y);
 		return;
 	}
@@ -84,7 +83,7 @@ void Fish::update(const sf::RenderWindow &, const sf::Time &delta)
 void Fish::propel()
 {
 	state = Propelled;
-	velocity.x = (630 - getPosition().x) / 2;
-	velocity.y = -200;
+	velocity.x = (650 - getPosition().x) + rand()%100;
+	velocity.y = -50-rand()%30;
 	rotate(rand() % 360);
 }
