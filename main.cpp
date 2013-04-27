@@ -17,7 +17,7 @@ sf::Sprite bg;
 sf::Texture hook_texture;
 Hook *hook;
 
-sf::Texture fish_texture;
+sf::Texture fish_texture[3];
 std::vector<Fish*> fishes;
 
 void load_data()
@@ -25,7 +25,9 @@ void load_data()
 	assert(bg_texture.loadFromFile("bg.png"));
 	bg.setTexture(bg_texture);
 	assert(hook_texture.loadFromFile("hook.png"));
-	assert(fish_texture.loadFromFile("fish.png"));
+	assert(fish_texture[0].loadFromFile("fish.png"));
+	assert(fish_texture[1].loadFromFile("fish2.png"));
+	assert(fish_texture[2].loadFromFile("fish3.png"));
 }
 
 int main(int, char **)
@@ -39,13 +41,25 @@ int main(int, char **)
 
 	load_data();
 
-	for (int i = 0; i < 50; i++)
-		fishes.push_back(new Fish(fish_texture));
+	for (int i = 0; i < 50; i++) {
+		Fish *f = new Fish(fish_texture[0]);
+		f->setPosition(rand() % 600 + 20, 250 + rand() % 200);
+		fishes.push_back(f);
+	}
+
+	for (int i = 0; i < 30; i++) {
+		Fish *f = new Fish(fish_texture[1]);
+		f->setPosition(rand() % 600 + 20, 300 + rand() % 200);
+		fishes.push_back(f);
+	}
+
+	for (int i = 0; i < 5; i++) {
+		Fish *f = new Fish(fish_texture[2]);
+		f->setPosition(rand() % 500 + 20, 400 + rand() % 200);
+		fishes.push_back(f);
+	}
 
 	hook = new Hook(hook_texture);
-
-	for (auto it = fishes.begin(); it != fishes.end(); it++)
-		(*it)->setPosition(rand() % 600 + 20, 250 + rand() % 100);
 
 	window.setFramerateLimit(60);
 	window.setKeyRepeatEnabled(false);

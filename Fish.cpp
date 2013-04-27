@@ -39,16 +39,22 @@ void Fish::update(const sf::RenderWindow &, const sf::Time &delta)
 		velocity /= length;
 		*/
 
+	if (state == Done)
+		return;
+
 	if (state == Caught) {
 		setScale(1, 1);
 		setRotation(90);
-		setPosition(hook->getPosition().x, hook->getPosition().y+10);
+		setPosition(hook->getPosition().x, hook->getPosition().y+getTexture()->getSize().y);
 		return;
 	}
 
 	if (state == Propelled) {
 		velocity.y += 130 * delta.asSeconds();
 		move(velocity * delta.asSeconds());
+		rotate(360 * delta.asSeconds());
+		if (velocity.y > 0 && getPosition().y > 120)
+			state = Done;
 		return;
 	}
 
@@ -78,6 +84,7 @@ void Fish::update(const sf::RenderWindow &, const sf::Time &delta)
 void Fish::propel()
 {
 	state = Propelled;
-	velocity.x = 150;
+	velocity.x = (630 - getPosition().x) / 2;
 	velocity.y = -200;
+	rotate(rand() % 360);
 }

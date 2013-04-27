@@ -12,7 +12,7 @@ Hook::Hook(const sf::Texture &texture) : GameSprite(texture)
 	setOrigin(size.x/2, size.y/2);
 	velocity.x = 0;
 	velocity.y = 20;
-	setPosition(100, 200);
+	setPosition(200, 200);
 }
 
 void Hook::catchFish()
