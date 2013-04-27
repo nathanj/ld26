@@ -13,10 +13,13 @@
 #include "Hook.hpp"
 #include "TextParticle.hpp"
 
-sf::Texture bg_texture;
-sf::Sprite bg;
+sf::Texture bg_texture[2];
+sf::Sprite bg[2];
 sf::Texture hook_texture;
 Hook *hook;
+
+sf::Texture sun_texture;;
+sf::Sprite sun;
 
 sf::Texture font_texture[12];
 
@@ -26,10 +29,18 @@ sf::Texture fish_texture[3];
 std::vector<Fish*> fishes;
 std::vector<TextParticle*> particles;
 
+int score;
+int multiplier;
+
 void load_data()
 {
-	assert(bg_texture.loadFromFile("bg.png"));
-	bg.setTexture(bg_texture);
+	assert(bg_texture[0].loadFromFile("bg.png"));
+	bg[0].setTexture(bg_texture[0]);
+	assert(bg_texture[1].loadFromFile("bg2.png"));
+	bg[1].setTexture(bg_texture[1]);
+	assert(sun_texture.loadFromFile("sun.png"));
+	sun.setTexture(sun_texture);
+	sun.setPosition(-80, 100);
 	assert(hook_texture.loadFromFile("hook.png"));
 	assert(fish_texture[0].loadFromFile("fish.png"));
 	assert(fish_texture[1].loadFromFile("fish2.png"));
@@ -56,22 +67,25 @@ int main(int, char **)
 
 	load_data();
 
+	score = 0;
+	multiplier = 1;
+
 	for (int i = 0; i < 100; i++) {
-		Fish *f = new Fish(fish_texture[0]);
+		Fish *f = new Fish(fish_texture[0], 10);
 		f->setPosition(rand() % 600 + 20, 250 + rand() % 200);
 		f->setColor(sf::Color(255-rand()%50, 255-rand()%50, 255-rand()%50, 255));
 		fishes.push_back(f);
 	}
 
 	for (int i = 0; i < 30; i++) {
-		Fish *f = new Fish(fish_texture[1]);
+		Fish *f = new Fish(fish_texture[1], 50);
 		f->setPosition(rand() % 600 + 20, 300 + rand() % 200);
 		f->setColor(sf::Color(255-rand()%50, 255-rand()%50, 255-rand()%50, 255));
 		fishes.push_back(f);
 	}
 
 	for (int i = 0; i < 5; i++) {
-		Fish *f = new Fish(fish_texture[2]);
+		Fish *f = new Fish(fish_texture[2], 200);
 		f->setPosition(rand() % 500 + 20, 400 + rand() % 200);
 		f->setColor(sf::Color(255-rand()%50, 255-rand()%50, 255-rand()%50, 255));
 		fishes.push_back(f);
@@ -84,6 +98,7 @@ int main(int, char **)
 
 	while (window.isOpen()) {
 		sf::Time time = clock.getElapsedTime();
+		sun.setPosition(time.asSeconds()*70 - 80, 130 - 100*sinf(M_PI * time.asSeconds()/10.0));
 		sf::Time delta = time - prev;
 		prev = time;
 		frames++;
@@ -122,7 +137,9 @@ int main(int, char **)
 		hook->update(window, delta);
 
 		//window.clear();
-		window.draw(bg);
+		window.draw(bg[0]);
+		window.draw(sun);
+		window.draw(bg[1]);
 		window.draw(dude);
 		for (auto it = fishes.begin(); it != fishes.end(); it++)
 			window.draw(**it);
@@ -132,6 +149,7 @@ int main(int, char **)
 			p->update(window, delta);
 			if (p->isDead()) {
 				particles.erase(it);
+				delete *it;
 				it--;
 				continue;
 			}
@@ -149,6 +167,8 @@ int main(int, char **)
 	for (auto it = fishes.begin(); it != fishes.end(); it++)
 		delete *it;
 	delete hook;
+	for (auto it = particles.begin(); it != particles.end(); it++)
+		delete *it;
 
 	return 0;
 }

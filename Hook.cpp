@@ -10,6 +10,9 @@ extern sf::Texture dude_texture[3];
 extern sf::Sprite dude;
 extern std::vector<TextParticle*> particles;
 
+extern int score;
+extern int multiplier;
+
 Hook::Hook(const sf::Texture &texture) : GameSprite(texture)
 {
 	sf::Vector2u size = texture.getSize();
@@ -58,6 +61,8 @@ void Hook::update(const sf::RenderWindow &, const sf::Time &delta)
 	if (state == Propelled) {
 		move(velocity * delta.asSeconds());
 		if (getPosition().x > 650 && getPosition().y < 100) {
+			char buf[16];
+
 			state = Launch;
 			dude.setTexture(dude_texture[2]);
 			dude.setPosition(570, 43);
@@ -65,10 +70,13 @@ void Hook::update(const sf::RenderWindow &, const sf::Time &delta)
 			velocity.x = -(rand() % 200 + 100);
 			velocity.y = -50;
 
+			snprintf(buf, sizeof(buf), "%dx%d", caught->points, multiplier);
+			particles.push_back(new TextParticle(buf));
+			score += caught->points * multiplier;
+			multiplier++;
+
 			caught->propel();
 			caught = NULL;
-
-			particles.push_back(new TextParticle("50x10"));
 		}
 		return;
 	}

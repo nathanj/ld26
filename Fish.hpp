@@ -7,7 +7,7 @@
 
 class Fish : public GameSprite {
 public:
-	Fish(const sf::Texture&);
+	Fish(const sf::Texture&, int points);
 
 	virtual void update(const sf::RenderWindow &window, const sf::Time &delta);
 	void propel();
@@ -18,6 +18,8 @@ public:
 		Propelled,
 		Done
 	} state;
+
+	int points;
 private:
 	Fish(const Fish&);
 	Fish& operator=(const Fish&);

@@ -6,11 +6,12 @@
 
 extern Hook *hook;
 
-Fish::Fish(const sf::Texture &texture) : GameSprite(texture)
+Fish::Fish(const sf::Texture &texture, int points) : GameSprite(texture)
 {
 	sf::Vector2u size = texture.getSize();
 	setOrigin(size.x/2, size.y/2);
 	state = Normal;
+	this->points = points;
 }
 
 static int chooseDirection(const sf::Vector2f &pos)
@@ -25,20 +26,8 @@ static int chooseDirection(const sf::Vector2f &pos)
 	return (rand() % 2 == 0) ? -1 : 1;
 }
 
-void Fish::update(const sf::RenderWindow &, const sf::Time &delta)
+void Fish::update(const sf::RenderWindow &window, const sf::Time &delta)
 {
-	/*
-	sf::Vector2i pos = sf::Mouse::getPosition(window);
-	sf::Vector2f spos = getPosition();
-
-	velocity.x = pos.x - spos.x;
-	velocity.y = pos.y - spos.y;
-
-	float length = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-	if (length > 0)
-		velocity /= length;
-		*/
-
 	if (state == Done)
 		return;
 
@@ -55,6 +44,21 @@ void Fish::update(const sf::RenderWindow &, const sf::Time &delta)
 		if (velocity.y > 0 && getPosition().y > 120)
 			state = Done;
 		return;
+	}
+
+	sf::Vector2i pos = sf::Mouse::getPosition(window);
+	sf::Vector2f spos = getPosition();
+	sf::Vector2f diff;
+
+	diff.x = pos.x - spos.x;
+	diff.y = pos.y - spos.y;
+
+	float length = sqrt(diff.x * diff.x + diff.y * diff.y);
+	if (length < 30) {
+		diff /= length;
+		diff.x *= 30;
+		diff.y *= 30;
+		velocity = -diff;
 	}
 
 	if (velocity.x == 0 && velocity.y == 0) {
