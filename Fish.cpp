@@ -61,7 +61,7 @@ void Fish::update(const sf::RenderWindow &, const sf::Time &delta)
 		// If currently stationary, decide if should move.
 		if (rand() % 30 == 0) {
 			int dir = chooseDirection(getPosition());
-			velocity.x = dir * 30;
+			velocity.x = dir * rand()%40;
 			setScale(dir * -1, 1);
 		}
 	} else {

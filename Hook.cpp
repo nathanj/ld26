@@ -3,10 +3,12 @@
 
 #include "Hook.hpp"
 #include "Fish.hpp"
+#include "TextParticle.hpp"
 
 extern std::vector<Fish*> fishes;
 extern sf::Texture dude_texture[3];
 extern sf::Sprite dude;
+extern std::vector<TextParticle*> particles;
 
 Hook::Hook(const sf::Texture &texture) : GameSprite(texture)
 {
@@ -16,6 +18,7 @@ Hook::Hook(const sf::Texture &texture) : GameSprite(texture)
 	velocity.y = 30;
 	setPosition(200, 200);
 	state = Launch;
+	caught = NULL;
 }
 
 void Hook::catchFish()
@@ -64,6 +67,8 @@ void Hook::update(const sf::RenderWindow &, const sf::Time &delta)
 
 			caught->propel();
 			caught = NULL;
+
+			particles.push_back(new TextParticle("50x10"));
 		}
 		return;
 	}

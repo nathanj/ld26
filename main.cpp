@@ -8,19 +8,23 @@
 #include <SFML/System.hpp>
 #include <SFML/Window/Mouse.hpp>
 
-#include "GameSprite.hpp"
 #include "Fish.hpp"
+#include "GameSprite.hpp"
 #include "Hook.hpp"
+#include "TextParticle.hpp"
 
 sf::Texture bg_texture;
 sf::Sprite bg;
 sf::Texture hook_texture;
 Hook *hook;
 
+sf::Texture font_texture[12];
+
 sf::Texture dude_texture[3];
 sf::Sprite dude;
 sf::Texture fish_texture[3];
 std::vector<Fish*> fishes;
+std::vector<TextParticle*> particles;
 
 void load_data()
 {
@@ -35,6 +39,10 @@ void load_data()
 	assert(dude_texture[2].loadFromFile("dude3.png"));
 	dude.setTexture(dude_texture[0]);
 	dude.setPosition(570, 53);
+
+	for (int i = 0; i < 12; i++)
+		assert(font_texture[i].loadFromFile("font.png",
+						    sf::IntRect(i*32, 0, 32, 32)));
 }
 
 int main(int, char **)
@@ -119,6 +127,18 @@ int main(int, char **)
 		for (auto it = fishes.begin(); it != fishes.end(); it++)
 			window.draw(**it);
 		window.draw(*hook);
+		for (auto it = particles.begin(); it != particles.end(); it++) {
+			TextParticle *p = *it;
+			p->update(window, delta);
+			if (p->isDead()) {
+				particles.erase(it);
+				it--;
+				continue;
+			}
+			sf::Sprite ss;
+			p->createSprite(ss);
+			window.draw(ss);
+		}
 		window.display();
 	}
 

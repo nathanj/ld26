@@ -6,7 +6,7 @@ LDFLAGS  := `pkg-config --libs sfml-graphics` -lm
 all: main
 	./main
 
-main: main.o GameSprite.o Fish.o Hook.o
+main: main.o GameSprite.o Fish.o Hook.o TextParticle.o
 
 .PHONY: clean
 clean:
