@@ -5,7 +5,9 @@
 #include <stdio.h>
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Text.hpp>
 #include <SFML/System.hpp>
+#include <SFML/System/String.hpp>
 #include <SFML/Window/Mouse.hpp>
 
 #include "Fish.hpp"
@@ -28,6 +30,8 @@ sf::Sprite dude;
 sf::Texture fish_texture[3];
 std::vector<Fish*> fishes;
 std::vector<TextParticle*> particles;
+
+sf::Font font;
 
 int score;
 int multiplier;
@@ -54,6 +58,8 @@ void load_data()
 	for (int i = 0; i < 12; i++)
 		assert(font_texture[i].loadFromFile("font.png",
 						    sf::IntRect(i*32, 0, 32, 32)));
+
+	assert(font.loadFromFile("Arial.ttf"));
 }
 
 int main(int, char **)
@@ -62,6 +68,8 @@ int main(int, char **)
 	sf::Clock clock;
 	sf::Time prev = clock.getElapsedTime();
 	int frames = 0;
+	sf::Vector2i mouse_positions[5];
+	int mouse_index = 0;
 
 	srand(time(NULL));
 
@@ -69,6 +77,9 @@ int main(int, char **)
 
 	score = 0;
 	multiplier = 1;
+
+	for (int i = 0; i < 5; i++)
+		mouse_positions[0] = sf::Mouse::getPosition(window);
 
 	for (int i = 0; i < 100; i++) {
 		Fish *f = new Fish(fish_texture[0], 10);
@@ -153,9 +164,7 @@ int main(int, char **)
 				it--;
 				continue;
 			}
-			sf::Sprite ss;
-			p->createSprite(ss);
-			window.draw(ss);
+			window.draw(p->text);
 		}
 		window.display();
 	}

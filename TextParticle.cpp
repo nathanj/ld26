@@ -1,10 +1,13 @@
-#include <SFML/System/Vector2.hpp>
 #include <math.h>
 #include <string.h>
+
+#include <SFML/Graphics/Text.hpp>
+#include <SFML/System/Vector2.hpp>
 
 #include "TextParticle.hpp"
 
 extern sf::Texture font_texture[12];
+extern sf::Font font;
 
 TextParticle::TextParticle(const char *str)
 {
@@ -14,29 +17,16 @@ TextParticle::TextParticle(const char *str)
 	velocity.x = 20;
 	velocity.y = -50;
 
-	position.x = 600;
-	position.y = 30;
-
-	renderTexture.create(200, 50);
-	sf::Sprite s;
-	renderTexture.clear(sf::Color::Transparent);
-	size_t len = strlen(str);
-	for (size_t i = 0; i < len; i++) {
-		if (str[i] >= '0' && str[i] <= '9') {
-			s.setTexture(font_texture[str[i]-'0']);
-			s.setPosition(i*32, 0);
-			renderTexture.draw(s);
-		} else if (str[i] == 'x') {
-			s.setTexture(font_texture[11]);
-			s.setPosition(i*32, 0);
-			renderTexture.draw(s);
-		}
-	}
-	renderTexture.display();
+	text.setFont(font);
+	text.setString(str);
+	text.setCharacterSize(30);
+	text.setStyle(sf::Text::Bold);
+	text.setPosition(650, 30);
 }
 
 void TextParticle::update(const sf::RenderWindow &, const sf::Time &delta)
 {
+	sf::Vector2f position = text.getPosition();
 	position.x += velocity.x * delta.asSeconds();
 	position.y += velocity.y * delta.asSeconds();
 	alpha -= decay * delta.asSeconds();
@@ -45,17 +35,12 @@ void TextParticle::update(const sf::RenderWindow &, const sf::Time &delta)
 		velocity.x = 0;
 		velocity.y = 0;
 	}
+
+	text.setPosition(position);
+	text.setColor(sf::Color(0, 64, 0, alpha));
 }
 
 bool TextParticle::isDead() const
 {
 	return alpha <= 0;
-}
-
-
-void TextParticle::createSprite(sf::Sprite &sprite)
-{
-	sprite.setTexture(renderTexture.getTexture());
-	sprite.setPosition(position);
-	sprite.setColor(sf::Color(255, 255, 255, alpha));
 }
