@@ -19,9 +19,9 @@ TextParticle::TextParticle(const char *str)
 
 	text.setFont(font);
 	text.setString(str);
-	text.setCharacterSize(30);
+	text.setCharacterSize(50);
 	text.setStyle(sf::Text::Bold);
-	text.setPosition(650, 30);
+	text.setPosition(650, 20);
 }
 
 void TextParticle::update(const sf::RenderWindow &, const sf::Time &delta)
@@ -37,7 +37,7 @@ void TextParticle::update(const sf::RenderWindow &, const sf::Time &delta)
 	}
 
 	text.setPosition(position);
-	text.setColor(sf::Color(0, 64, 0, alpha));
+	text.setColor(sf::Color(0, 32, 0, alpha));
 }
 
 bool TextParticle::isDead() const
