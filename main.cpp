@@ -66,6 +66,8 @@ void load_data()
 static Fish *find_fish(int x, int y)
 {
 	for (auto it = fishes.begin(); it != fishes.end(); it++) {
+		if ((*it)->state != Fish::Normal)
+			continue;
 		sf::FloatRect bounds = (*it)->getGlobalBounds();
 		bounds.left -= 3;
 		bounds.top -= 3;
@@ -90,7 +92,6 @@ void initialize()
 {
 	game_clock.restart();
 	prev = game_clock.getElapsedTime();
-	state = Playing;
 	score = 0;
 	multiplier = 1;
 
@@ -141,6 +142,7 @@ int main(int, char **)
 	window.setFramerateLimit(60);
 	window.setKeyRepeatEnabled(false);
 
+	state = Title;
 restart:
 	initialize();
 	while (window.isOpen()) {
@@ -173,20 +175,23 @@ restart:
 				}
 			}
 
-			if (state == GameOver) {
+			if (state == Title || state == GameOver) {
 				if (event.type == sf::Event::MouseButtonPressed) {
 					sf::IntRect rect(80, 480, 670-80, 580-480);
 					if (rect.contains(event.mouseButton.x, event.mouseButton.y)) {
+						state = Playing;
 						goto restart;
 					}
 				}
 			}
 		}
 
-		if (state == Playing) {
+		if (state == Title || state == Playing) {
 			for (auto it = fishes.begin(); it != fishes.end(); it++)
 				(*it)->update(window, delta);
-			hook->update(window, delta);
+
+			if (state == Playing)
+				hook->update(window, delta);
 
 			sun.setPosition(time.asSeconds()*7 - 80, 130 - 100*sinf(M_PI * time.asSeconds()/120.0));
 			if (selected && selected->state == Fish::Selected) {
@@ -209,7 +214,8 @@ restart:
 			window.draw(dude);
 			for (auto it = fishes.begin(); it != fishes.end(); it++)
 				window.draw(**it);
-			window.draw(*hook);
+			if (state == Playing)
+				window.draw(*hook);
 			for (auto it = particles.begin(); it != particles.end(); it++) {
 				TextParticle *p = *it;
 				p->update(window, delta);
@@ -222,24 +228,29 @@ restart:
 				window.draw(p->text);
 			}
 
-			char buf[256];
-			snprintf(buf, sizeof(buf), "Time Left: %d", 120 - (int) time.asSeconds());
-			sf::Text text(buf, font, 24);
-			text.setStyle(sf::Text::Bold);
-			text.setColor(sf::Color(0, 0, 30, 255));
-			window.draw(text);
+			if (state == Playing) {
+				char buf[256];
+				snprintf(buf, sizeof(buf), "Time Left: %d", 120 - (int) time.asSeconds());
+				sf::Text text(buf, font, 24);
+				text.setStyle(sf::Text::Bold);
+				text.setColor(sf::Color(0, 0, 30, 255));
+				window.draw(text);
 
-			snprintf(buf, sizeof(buf), "Score: %d", score);
-			text.setString(buf);
-			text.setPosition(200, 0);
-			window.draw(text);
+				snprintf(buf, sizeof(buf), "Score: %d", score);
+				text.setString(buf);
+				text.setPosition(200, 0);
+				window.draw(text);
+			}
 
-			if (time.asSeconds() >= 120) {
+			if (state == Playing && time.asSeconds() >= 120) {
 				sf::RectangleShape rect(sf::Vector2f(800, 600));
 				rect.setFillColor(sf::Color(0, 0, 0, 150));
 				window.draw(rect);
 				state = GameOver;
 
+				sf::Text text;
+				text.setFont(font);
+				char buf[256];
 				text.setCharacterSize(50);
 				text.setColor(sf::Color(255, 255, 255, 255));
 
@@ -258,6 +269,104 @@ restart:
 				window.draw(text);
 
 				snprintf(buf, sizeof(buf), "Click here to play again");
+				text.setColor(sf::Color(255, 255, 255, 255));
+				text.setString(buf);
+				text.setPosition(100, 500);
+				window.draw(text);
+			}
+
+			if (state == Title) {
+				sf::Text text;
+				char buf[256];
+				sf::RectangleShape rect(sf::Vector2f(800, 600));
+				rect.setFillColor(sf::Color(0, 0, 0, 150));
+				window.draw(rect);
+
+				text.setFont(font);
+				text.setCharacterSize(80);
+				text.setColor(sf::Color(255, 255, 255, 255));
+
+				snprintf(buf, sizeof(buf), "Fisherdude");
+				text.setString(buf);
+				text.setPosition(70, 30);
+				window.draw(text);
+
+				snprintf(buf, sizeof(buf), "Instructions:");
+				text.setCharacterSize(20);
+				text.setColor(sf::Color(255, 255, 255, 255));
+				text.setString(buf);
+				text.setPosition(100, 250);
+				window.draw(text);
+				snprintf(buf, sizeof(buf), "Click and drag fishes left and right.");
+				text.setCharacterSize(20);
+				text.setColor(sf::Color(255, 255, 255, 255));
+				text.setString(buf);
+				text.setPosition(100, 280);
+				window.draw(text);
+				snprintf(buf, sizeof(buf), "Catch smaller fishes to increase multiplier");
+				text.setCharacterSize(20);
+				text.setColor(sf::Color(255, 255, 255, 255));
+				text.setString(buf);
+				text.setPosition(100, 310);
+				window.draw(text);
+				snprintf(buf, sizeof(buf), "then go for the big catch!");
+				text.setCharacterSize(20);
+				text.setColor(sf::Color(255, 255, 255, 255));
+				text.setString(buf);
+				text.setPosition(130, 340);
+				window.draw(text);
+				snprintf(buf, sizeof(buf), "Get a high score before the sun goes down!");
+				text.setCharacterSize(20);
+				text.setColor(sf::Color(255, 255, 255, 255));
+				text.setString(buf);
+				text.setPosition(100, 370);
+				window.draw(text);
+
+				snprintf(buf, sizeof(buf), "Points: ");
+				text.setCharacterSize(20);
+				text.setColor(sf::Color(255, 255, 255, 255));
+				text.setString(buf);
+				text.setPosition(100, 430);
+				window.draw(text);
+
+				snprintf(buf, sizeof(buf), "10");
+				text.setCharacterSize(20);
+				text.setColor(sf::Color(255, 255, 255, 255));
+				text.setString(buf);
+				text.setPosition(210, 450);
+				window.draw(text);
+
+				snprintf(buf, sizeof(buf), "50");
+				text.setCharacterSize(20);
+				text.setColor(sf::Color(255, 255, 255, 255));
+				text.setString(buf);
+				text.setPosition(320, 450);
+				window.draw(text);
+
+				snprintf(buf, sizeof(buf), "200");
+				text.setCharacterSize(20);
+				text.setColor(sf::Color(255, 255, 255, 255));
+				text.setString(buf);
+				text.setPosition(430, 450);
+				window.draw(text);
+
+				sf::Sprite s(fish_texture[0]);
+				s.setPosition(210, 420);
+				s.setScale(2,2);
+				window.draw(s);
+
+				sf::Sprite s2(fish_texture[1]);
+				s2.setPosition(300, 410);
+				s2.setScale(2,2);
+				window.draw(s2);
+
+				sf::Sprite s3(fish_texture[2]);
+				s3.setPosition(400, 420);
+				s3.setScale(2,2);
+				window.draw(s3);
+
+				snprintf(buf, sizeof(buf), "Click here to play");
+				text.setCharacterSize(50);
 				text.setColor(sf::Color(255, 255, 255, 255));
 				text.setString(buf);
 				text.setPosition(100, 500);
