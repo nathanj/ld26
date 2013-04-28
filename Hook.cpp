@@ -19,8 +19,13 @@ Hook::Hook(const sf::Texture &texture) : GameSprite(texture)
 	setOrigin(size.x/2, size.y/2);
 	velocity.x = 0;
 	velocity.y = 30;
-	setPosition(200, 200);
+	setPosition(600, 20);
 	state = Launch;
+	dude.setTexture(dude_texture[2]);
+	dude.setPosition(570, 43);
+	setRotation(0);
+	velocity.x = -(rand() % 150 + 100);
+	velocity.y = -50;
 	caught = NULL;
 }
 

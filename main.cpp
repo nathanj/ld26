@@ -77,25 +77,33 @@ static Fish *find_fish(int x, int y)
 	return NULL;
 }
 
+enum State {
+	Title,
+	Playing,
+	GameOver
+} state;
 
-int main(int, char **)
+sf::Clock game_clock;
+sf::Time prev;
+
+void initialize()
 {
-	sf::RenderWindow window(sf::VideoMode(800, 600), "SFML Window");
-	sf::Clock clock;
-	sf::Time prev = clock.getElapsedTime();
-	int frames = 0;
-	sf::Vector2i mouse_positions[5];
-	//int mouse_index = 0;
-
-	srand(time(NULL));
-
-	load_data();
-
+	game_clock.restart();
+	prev = game_clock.getElapsedTime();
+	state = Playing;
 	score = 0;
 	multiplier = 1;
 
-	for (int i = 0; i < 5; i++)
-		mouse_positions[0] = sf::Mouse::getPosition(window);
+	for (auto it = fishes.begin(); it != fishes.end(); it++)
+		delete *it;
+	fishes.clear();
+	for (auto it = particles.begin(); it != particles.end(); it++)
+		delete *it;
+	particles.clear();
+	if (hook) {
+		delete hook;
+		hook = NULL;
+	}
 
 	for (int i = 0; i < 30; i++) {
 		Fish *f = new Fish(fish_texture[0], 10);
@@ -119,29 +127,27 @@ int main(int, char **)
 	}
 
 	hook = new Hook(hook_texture);
+}
+
+int main(int, char **)
+{
+	sf::RenderWindow window(sf::VideoMode(800, 600), "SFML Window");
+	int frames = 0;
+
+	srand(time(NULL));
+
+	load_data();
 
 	window.setFramerateLimit(60);
 	window.setKeyRepeatEnabled(false);
 
+restart:
+	initialize();
 	while (window.isOpen()) {
-		sf::Time time = clock.getElapsedTime();
-		sun.setPosition(time.asSeconds()*8 - 80, 130 - 100*sinf(M_PI * time.asSeconds()/90.0));
+		sf::Time time = game_clock.getElapsedTime();
 		sf::Time delta = time - prev;
 		prev = time;
 		frames++;
-
-		if (selected && selected->state == Fish::Selected) {
-			sf::Vector2i pos = sf::Mouse::getPosition(window);
-
-			if (pos.x < 5)
-				pos.x = 0;
-
-			// Stop if running into the grass.
-			if (pos.x > (700 + (550 - 700) * (selected->getPosition().y - 200)/400.0) - 30)
-				pos.x = (700 + (550 - 700) * (selected->getPosition().y - 200)/400.0) - 30;;
-
-			selected->setPosition(pos.x, selected->getPosition().y);
-		}
 
 		sf::Event event;
 		while (window.pollEvent(event)) {
@@ -150,60 +156,119 @@ int main(int, char **)
 			if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::Q)
 					window.close();
-			} else if (event.type == sf::Event::MouseButtonPressed) {
-				selected = find_fish(event.mouseButton.x, event.mouseButton.y);
-				if (selected)
-					selected->state = Fish::Selected;
-			} else if (event.type == sf::Event::MouseButtonReleased) {
-				if (selected && selected->state == Fish::Selected) {
-					selected->state = Fish::Normal;
-					selected->velocity.x = 0;
-					selected->velocity.y = 0;
+			}
+
+			if (state == Playing) {
+				if (event.type == sf::Event::MouseButtonPressed) {
+					selected = find_fish(event.mouseButton.x, event.mouseButton.y);
+					if (selected)
+						selected->state = Fish::Selected;
+				} else if (event.type == sf::Event::MouseButtonReleased) {
+					if (selected && selected->state == Fish::Selected) {
+						selected->state = Fish::Normal;
+						selected->velocity.x = 0;
+						selected->velocity.y = 0;
+					}
+					selected = NULL;
 				}
-				selected = NULL;
+			}
+
+			if (state == GameOver) {
+				if (event.type == sf::Event::MouseButtonPressed) {
+					sf::IntRect rect(80, 480, 670-80, 580-480);
+					if (rect.contains(event.mouseButton.x, event.mouseButton.y)) {
+						goto restart;
+					}
+				}
 			}
 		}
 
-		for (auto it = fishes.begin(); it != fishes.end(); it++)
-			(*it)->update(window, delta);
-		hook->update(window, delta);
+		if (state == Playing) {
+			for (auto it = fishes.begin(); it != fishes.end(); it++)
+				(*it)->update(window, delta);
+			hook->update(window, delta);
 
-		//window.clear();
-		window.draw(bg[0]);
-		window.draw(sun);
-		window.draw(bg[1]);
-		window.draw(dude);
-		for (auto it = fishes.begin(); it != fishes.end(); it++)
-			window.draw(**it);
-		window.draw(*hook);
-		for (auto it = particles.begin(); it != particles.end(); it++) {
-			TextParticle *p = *it;
-			p->update(window, delta);
-			if (p->isDead()) {
-				particles.erase(it);
-				delete *it;
-				it--;
-				continue;
+			sun.setPosition(time.asSeconds()*7 - 80, 130 - 100*sinf(M_PI * time.asSeconds()/120.0));
+			if (selected && selected->state == Fish::Selected) {
+				sf::Vector2i pos = sf::Mouse::getPosition(window);
+
+				if (pos.x < 5)
+					pos.x = 0;
+
+				// Stop if running into the grass.
+				if (pos.x > (700 + (550 - 700) * (selected->getPosition().y - 200)/400.0) - 30)
+					pos.x = (700 + (550 - 700) * (selected->getPosition().y - 200)/400.0) - 30;;
+
+				selected->setPosition(pos.x, selected->getPosition().y);
 			}
-			window.draw(p->text);
+
+			//window.clear();
+			window.draw(bg[0]);
+			window.draw(sun);
+			window.draw(bg[1]);
+			window.draw(dude);
+			for (auto it = fishes.begin(); it != fishes.end(); it++)
+				window.draw(**it);
+			window.draw(*hook);
+			for (auto it = particles.begin(); it != particles.end(); it++) {
+				TextParticle *p = *it;
+				p->update(window, delta);
+				if (p->isDead()) {
+					particles.erase(it);
+					delete *it;
+					it--;
+					continue;
+				}
+				window.draw(p->text);
+			}
+
+			char buf[256];
+			snprintf(buf, sizeof(buf), "Time Left: %d", 120 - (int) time.asSeconds());
+			sf::Text text(buf, font, 24);
+			text.setStyle(sf::Text::Bold);
+			text.setColor(sf::Color(0, 0, 30, 255));
+			window.draw(text);
+
+			snprintf(buf, sizeof(buf), "Score: %d", score);
+			text.setString(buf);
+			text.setPosition(200, 0);
+			window.draw(text);
+
+			if (time.asSeconds() >= 120) {
+				sf::RectangleShape rect(sf::Vector2f(800, 600));
+				rect.setFillColor(sf::Color(0, 0, 0, 150));
+				window.draw(rect);
+				state = GameOver;
+
+				text.setCharacterSize(50);
+				text.setColor(sf::Color(255, 255, 255, 255));
+
+				snprintf(buf, sizeof(buf), "Time's Up!");
+				text.setString(buf);
+				text.setPosition(230, 200);
+				window.draw(text);
+				snprintf(buf, sizeof(buf), "Your score was:");
+				text.setString(buf);
+				text.setPosition(180, 250);
+				window.draw(text);
+				snprintf(buf, sizeof(buf), "%d", score);
+				text.setColor(sf::Color(255, 255, 200, 255));
+				text.setString(buf);
+				text.setPosition(280, 300);
+				window.draw(text);
+
+				snprintf(buf, sizeof(buf), "Click here to play again");
+				text.setColor(sf::Color(255, 255, 255, 255));
+				text.setString(buf);
+				text.setPosition(100, 500);
+				window.draw(text);
+			}
+
+			window.display();
 		}
-
-		char buf[256];
-		snprintf(buf, sizeof(buf), "Time Left: %d", 100 - (int) time.asSeconds());
-		sf::Text text(buf, font, 24);
-		text.setStyle(sf::Text::Bold);
-		text.setColor(sf::Color(0, 0, 30, 255));
-		window.draw(text);
-
-		snprintf(buf, sizeof(buf), "Score: %d", score);
-		text.setString(buf);
-		text.setPosition(200, 0);
-		window.draw(text);
-
-		window.display();
 	}
 
-	sf::Time time = clock.getElapsedTime();
+	sf::Time time = game_clock.getElapsedTime();
 	printf("%d frames in %.2f seconds = %.2f FPS\n", frames, time.asSeconds(),
 	       frames / time.asSeconds());
 
