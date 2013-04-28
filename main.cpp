@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+
 #include <list>
 #include <string>
 #include <assert.h>
@@ -16,6 +18,10 @@
 #include "GameSprite.hpp"
 #include "Hook.hpp"
 #include "TextParticle.hpp"
+
+#if _MSC_VER
+#define snprintf _snprintf
+#endif
 
 sf::Music music;
 
@@ -232,14 +238,23 @@ restart:
 				window.draw(*hook);
 			for (auto it = particles.begin(); it != particles.end(); it++) {
 				TextParticle *p = *it;
+				if (!p)
+					continue;
 				p->update(window, delta);
 				if (p->isDead()) {
+					delete p;
+					*it = NULL;
+				} else {
+					window.draw(p->text);
+				}
+				/*
+				if (p->isDead()) {
+					//delete *it;
 					particles.erase(it);
-					delete *it;
 					it--;
 					continue;
 				}
-				window.draw(p->text);
+				window.draw(p->text);*/
 			}
 
 			if (state == Playing) {
@@ -390,10 +405,6 @@ restart:
 			window.display();
 		}
 	}
-
-	sf::Time time = game_clock.getElapsedTime();
-	printf("%d frames in %.2f seconds = %.2f FPS\n", frames, time.asSeconds(),
-	       frames / time.asSeconds());
 
 	for (auto it = fishes.begin(); it != fishes.end(); it++)
 		delete *it;

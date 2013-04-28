@@ -1,5 +1,6 @@
 #include <SFML/System/Vector2.hpp>
 #include <math.h>
+#include <stdio.h>
 
 #include "Hook.hpp"
 #include "Fish.hpp"
@@ -12,6 +13,10 @@ extern std::vector<TextParticle*> particles;
 
 extern int score;
 extern int multiplier;
+
+#if _MSC_VER
+#define snprintf _snprintf
+#endif
 
 Hook::Hook(const sf::Texture &texture) : GameSprite(texture)
 {
