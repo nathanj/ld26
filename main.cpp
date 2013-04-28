@@ -166,6 +166,19 @@ int main(int, char **)
 			}
 			window.draw(p->text);
 		}
+
+		char buf[256];
+		snprintf(buf, sizeof(buf), "Time Left: %d", 90 - (int) time.asSeconds());
+		sf::Text text(buf, font, 24);
+		text.setStyle(sf::Text::Bold);
+		text.setColor(sf::Color(0, 0, 30, 255));
+		window.draw(text);
+
+		snprintf(buf, sizeof(buf), "Score: %d", score);
+		text.setString(buf);
+		text.setPosition(200, 0);
+		window.draw(text);
+
 		window.display();
 	}
 
