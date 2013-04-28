@@ -4,16 +4,20 @@
 #include <math.h>
 #include <stdio.h>
 
+#include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/System.hpp>
 #include <SFML/System/String.hpp>
+#include <SFML/System/Sleep.hpp>
 #include <SFML/Window/Mouse.hpp>
 
 #include "Fish.hpp"
 #include "GameSprite.hpp"
 #include "Hook.hpp"
 #include "TextParticle.hpp"
+
+sf::Music music;
 
 sf::Texture bg_texture[2];
 sf::Sprite bg[2];
@@ -61,6 +65,7 @@ void load_data()
 						    sf::IntRect(i*32, 0, 32, 32)));
 
 	assert(font.loadFromFile("Arial.ttf"));
+	assert(music.openFromFile("bg.ogg"));
 }
 
 static Fish *find_fish(int x, int y)
@@ -180,10 +185,18 @@ restart:
 					sf::IntRect rect(80, 480, 670-80, 580-480);
 					if (rect.contains(event.mouseButton.x, event.mouseButton.y)) {
 						state = Playing;
+						music.stop();
+						music.setVolume(100);
+						music.play();
 						goto restart;
 					}
 				}
 			}
+		}
+
+		if (state == GameOver) {
+			sf::sleep(sf::microseconds(16));
+			music.setVolume(music.getVolume() * 0.99999);
 		}
 
 		if (state == Title || state == Playing) {
