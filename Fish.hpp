@@ -16,10 +16,13 @@ public:
 		Normal,
 		Caught,
 		Propelled,
+		Selected,
 		Done
 	} state;
 
 	int points;
+	sf::Vector2f decay;
+
 private:
 	Fish(const Fish&);
 	Fish& operator=(const Fish&);

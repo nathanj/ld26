@@ -31,7 +31,8 @@ void Hook::catchFish()
 
 	sf::FloatRect bounds = getGlobalBounds();
 	for (auto it = fishes.begin(); it != fishes.end(); it++) {
-		if ((*it)->state == Fish::State::Normal && bounds.intersects((*it)->getGlobalBounds())) {
+		if (((*it)->state == Fish::State::Normal || (*it)->state == Fish::State::Selected)
+		    && bounds.intersects((*it)->getGlobalBounds())) {
 			caught = *it;
 			caught->state = Fish::State::Caught;
 			caught->setRotation(90);

@@ -12,6 +12,8 @@ Fish::Fish(const sf::Texture &texture, int points) : GameSprite(texture)
 	setOrigin(size.x/2, size.y/2);
 	state = Normal;
 	this->points = points;
+	decay.x = 0;
+	decay.y = 0;
 }
 
 static int chooseDirection(const sf::Vector2f &pos)
@@ -26,9 +28,12 @@ static int chooseDirection(const sf::Vector2f &pos)
 	return (rand() % 2 == 0) ? -1 : 1;
 }
 
-void Fish::update(const sf::RenderWindow &window, const sf::Time &delta)
+void Fish::update(const sf::RenderWindow &, const sf::Time &delta)
 {
 	if (state == Done)
+		return;
+
+	if (state == Selected)
 		return;
 
 	if (state == Caught) {
@@ -44,21 +49,6 @@ void Fish::update(const sf::RenderWindow &window, const sf::Time &delta)
 		if (velocity.y > 0 && getPosition().y > 120)
 			state = Done;
 		return;
-	}
-
-	sf::Vector2i pos = sf::Mouse::getPosition(window);
-	sf::Vector2f spos = getPosition();
-	sf::Vector2f diff;
-
-	diff.x = pos.x - spos.x;
-	diff.y = pos.y - spos.y;
-
-	float length = sqrt(diff.x * diff.x + diff.y * diff.y);
-	if (length < 30) {
-		diff /= length;
-		diff.x *= 30;
-		diff.y *= 30;
-		velocity = -diff;
 	}
 
 	if (velocity.x == 0 && velocity.y == 0) {

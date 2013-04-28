@@ -32,6 +32,7 @@ std::vector<Fish*> fishes;
 std::vector<TextParticle*> particles;
 
 sf::Font font;
+Fish *selected;
 
 int score;
 int multiplier;
@@ -62,6 +63,21 @@ void load_data()
 	assert(font.loadFromFile("Arial.ttf"));
 }
 
+static Fish *find_fish(int x, int y)
+{
+	for (auto it = fishes.begin(); it != fishes.end(); it++) {
+		sf::FloatRect bounds = (*it)->getGlobalBounds();
+		bounds.left -= 3;
+		bounds.top -= 3;
+		bounds.width += 3;
+		bounds.height += 3;
+		if (bounds.contains(x, y))
+			return *it;
+	}
+	return NULL;
+}
+
+
 int main(int, char **)
 {
 	sf::RenderWindow window(sf::VideoMode(800, 600), "SFML Window");
@@ -69,7 +85,7 @@ int main(int, char **)
 	sf::Time prev = clock.getElapsedTime();
 	int frames = 0;
 	sf::Vector2i mouse_positions[5];
-	int mouse_index = 0;
+	//int mouse_index = 0;
 
 	srand(time(NULL));
 
@@ -81,14 +97,14 @@ int main(int, char **)
 	for (int i = 0; i < 5; i++)
 		mouse_positions[0] = sf::Mouse::getPosition(window);
 
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < 30; i++) {
 		Fish *f = new Fish(fish_texture[0], 10);
 		f->setPosition(rand() % 600 + 20, 250 + rand() % 200);
 		f->setColor(sf::Color(255-rand()%50, 255-rand()%50, 255-rand()%50, 255));
 		fishes.push_back(f);
 	}
 
-	for (int i = 0; i < 30; i++) {
+	for (int i = 0; i < 20; i++) {
 		Fish *f = new Fish(fish_texture[1], 50);
 		f->setPosition(rand() % 600 + 20, 300 + rand() % 200);
 		f->setColor(sf::Color(255-rand()%50, 255-rand()%50, 255-rand()%50, 255));
@@ -109,37 +125,42 @@ int main(int, char **)
 
 	while (window.isOpen()) {
 		sf::Time time = clock.getElapsedTime();
-		sun.setPosition(time.asSeconds()*70 - 80, 130 - 100*sinf(M_PI * time.asSeconds()/10.0));
+		sun.setPosition(time.asSeconds()*8 - 80, 130 - 100*sinf(M_PI * time.asSeconds()/90.0));
 		sf::Time delta = time - prev;
 		prev = time;
 		frames++;
+
+		if (selected && selected->state == Fish::Selected) {
+			sf::Vector2i pos = sf::Mouse::getPosition(window);
+
+			if (pos.x < 5)
+				pos.x = 0;
+
+			// Stop if running into the grass.
+			if (pos.x > (700 + (550 - 700) * (selected->getPosition().y - 200)/400.0) - 30)
+				pos.x = (700 + (550 - 700) * (selected->getPosition().y - 200)/400.0) - 30;;
+
+			selected->setPosition(pos.x, selected->getPosition().y);
+		}
 
 		sf::Event event;
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed)
 				window.close();
-			if (event.type == sf::Event::JoystickButtonPressed) {
-				printf("joystick: %d button: %d\n",
-				       event.joystickButton.joystickId,
-				       event.joystickButton.button);
-			}
-			if (event.type == sf::Event::JoystickButtonReleased) {
-				printf("joyreles: %d button: %d\n",
-				       event.joystickButton.joystickId,
-				       event.joystickButton.button);
-			}
-			if (event.type == sf::Event::JoystickMoved) {
-				printf("joystick: %d axis: %d position: %f\n",
-				       event.joystickMove.joystickId,
-				       event.joystickMove.axis,
-				       event.joystickMove.position);
-			}
 			if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::Q)
 					window.close();
-			}
-			if (event.type == sf::Event::MouseMoved) {
-				//printf("mouse move: %d %d\n", event.mouseMove.x, event.mouseMove.y);
+			} else if (event.type == sf::Event::MouseButtonPressed) {
+				selected = find_fish(event.mouseButton.x, event.mouseButton.y);
+				if (selected)
+					selected->state = Fish::Selected;
+			} else if (event.type == sf::Event::MouseButtonReleased) {
+				if (selected && selected->state == Fish::Selected) {
+					selected->state = Fish::Normal;
+					selected->velocity.x = 0;
+					selected->velocity.y = 0;
+				}
+				selected = NULL;
 			}
 		}
 
@@ -168,7 +189,7 @@ int main(int, char **)
 		}
 
 		char buf[256];
-		snprintf(buf, sizeof(buf), "Time Left: %d", 90 - (int) time.asSeconds());
+		snprintf(buf, sizeof(buf), "Time Left: %d", 100 - (int) time.asSeconds());
 		sf::Text text(buf, font, 24);
 		text.setStyle(sf::Text::Bold);
 		text.setColor(sf::Color(0, 0, 30, 255));

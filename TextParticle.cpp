@@ -19,9 +19,9 @@ TextParticle::TextParticle(const char *str)
 
 	text.setFont(font);
 	text.setString(str);
-	text.setCharacterSize(50);
+	text.setCharacterSize(40);
 	text.setStyle(sf::Text::Bold);
-	text.setPosition(650, 20);
+	text.setPosition(620, 20);
 }
 
 void TextParticle::update(const sf::RenderWindow &, const sf::Time &delta)
